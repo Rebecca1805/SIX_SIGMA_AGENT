@@ -40,10 +40,12 @@ OPENAI_API_KEY=coloque_sua_chave_aqui
 Coloque suas apostilas na pasta `DADOS/` com os seguintes nomes:
 ```
 DADOS/
+  ├── six_sigma_apostila_agente.pdf
   ├── six_sigma_black_belt.pdf
   ├── six_sigma_green_belt.pdf
   ├── six_sigma_guia.pdf
   ├── six_sigma_introducao.pdf
+  ├── six_sigma_resumo.pdf
   ├── six_sigma_white_belt.pdf
   └── six_sigma_yellow_belt.pdf
 ```
@@ -84,3 +86,13 @@ streamlit run app.py
   - Início de mapeamento de processo
   - Benefícios em tratar um processo
   - Cálculo de ganhos financeiros, erros ou ROI
+
+---
+
+### 📌 Aviso Legal
+
+Este agente utiliza como base de conhecimento o material **“Six Sigma” (Graeme Knowles, Ventus Publishing ApS, 2011), disponível gratuitamente em [Bookboon.com](http://bookboon.com/)**.  
+O conteúdo é fornecido apenas para **fins educacionais e explicativos**, sem qualquer finalidade comercial.  
+Todos os direitos autorais do material original permanecem com o autor e a editora.
+---
+
