@@ -96,25 +96,45 @@ def carregar_agente(folder_path: str = "DADOS"):
     return chain
 
 
+
 def responder_agente(agente, pergunta: str) -> str:
     """
     Roteia perguntas: se for sobre nível sigma, usa cálculo direto.
     Caso contrário, usa o agente normal (RAG).
     """
-    # Detecta padrão de pergunta sobre sigma
     padrao = r"(?i)(nível sigma|calcular sigma|qual.*sigma)"
     if re.search(padrao, pergunta):
         try:
-            # Procura números na pergunta
-            numeros = [int(n) for n in re.findall(r"\d+", pergunta)]
-            if len(numeros) >= 3:
-                unidades, oportunidades, defeitos = numeros[0], numeros[1], numeros[2]
-                sigma = calcular_sigma(unidades, oportunidades, defeitos)
+            # Captura números que podem ter ponto ou vírgula
+            matches = re.findall(r"\d+[.,]?\d*", pergunta)
+            numeros = [float(m.replace(".", "").replace(",", ".")) for m in matches]
+
+            # Tentamos mapear por contexto (palavras-chave)
+            unidades = oportunidades = defeitos = None
+
+            # Busca por "unidade(s)"
+            m_unid = re.search(r"(\d+[.,]?\d*)\s*unidade", pergunta, re.IGNORECASE)
+            if m_unid: 
+                unidades = float(m_unid.group(1).replace(".", "").replace(",", "."))
+
+            # Busca por "oportunidade(s)"
+            m_opp = re.search(r"(\d+[.,]?\d*)\s*oportunidade", pergunta, re.IGNORECASE)
+            if m_opp: 
+                oportunidades = float(m_opp.group(1).replace(".", "").replace(",", "."))
+
+            # Busca por "defeito(s)"
+            m_def = re.search(r"(\d+[.,]?\d*)\s*defeito", pergunta, re.IGNORECASE)
+            if m_def: 
+                defeitos = float(m_def.group(1).replace(".", "").replace(",", "."))
+
+            if unidades and oportunidades and defeitos is not None:
+                sigma = calcular_sigma(int(unidades), int(oportunidades), int(defeitos))
                 return f"O nível sigma do processo é aproximadamente **{sigma}**."
             else:
-                return "Para calcular o nível sigma, preciso de três informações: número de unidades, oportunidades por unidade e defeitos."
+                return "Para calcular o nível sigma, preciso de três informações: número de unidades produzidas, oportunidades por unidade e defeitos encontrados."
+        
         except Exception as e:
-            return f"Não consegui calcular o sigma: {e}"
-    
-    # Se não for cálculo, cai no fluxo normal
+            return f"⚠️ Não consegui calcular o sigma: {e}"
+
+    # Caso não seja cálculo de sigma → usa o agente normal (RAG)
     return agente.invoke({"input": pergunta})["answer"]
