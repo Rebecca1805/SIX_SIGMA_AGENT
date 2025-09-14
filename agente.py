@@ -95,7 +95,7 @@ def carregar_agente(folder_path: str = "DADOS"):
 
     return chain
 
-
+import streamlit as st
 def responder_agente(agente, pergunta: str) -> str:
     """
     Roteia perguntas:
