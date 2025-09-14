@@ -80,7 +80,7 @@ def carregar_agente(folder_path: str = "DADOS"):
          "   - Benefícios em tratar um processo,\n"
          "   - Como calcular ganhos financeiros, erros ou ROI,\n"
          "   use as instruções e fórmulas práticas da apostila para responder.\n\n"
-         "Contexto: <<<{{context}}>>>"),
+         "Contexto:  {context}"),
         ("human", "{input}")
     ])
 
