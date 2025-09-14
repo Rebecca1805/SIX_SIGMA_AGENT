@@ -14,6 +14,9 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
+from scipy.stats import norm
+import re
+from utils import calcular_sigma
 
 # Garante que o event loop exista no Streamlit
 try:
@@ -94,13 +97,38 @@ def carregar_agente(folder_path: str = "DADOS"):
 
 
 def responder_agente(agente, pergunta: str) -> str:
-    """Recebe uma pergunta e retorna a resposta do agente."""
-    # Aqui o chain criado por create_retrieval_chain espera a chave 'input'
-    resp = agente.invoke({"input": pergunta})
-    # Ele normalmente retorna {'input': ..., 'context': [...], 'answer': '...'}
-    if isinstance(resp, dict):
-        if "answer" in resp:
-            return resp["answer"]
-        if "result" in resp:
-            return resp["result"]
-    return str(resp)
+    """
+    Roteia perguntas: se for sobre nível sigma, usa cálculo direto.
+    Caso contrário, usa o agente normal (RAG).
+    """
+    # Detecta padrão de pergunta sobre sigma
+    padrao = r"(?i)(nível sigma|calcular sigma|qual.*sigma)"
+    if re.search(padrao, pergunta):
+        try:
+            # Procura números na pergunta
+            numeros = [int(n) for n in re.findall(r"\d+", pergunta)]
+            if len(numeros) >= 3:
+                unidades, oportunidades, defeitos = numeros[0], numeros[1], numeros[2]
+                sigma = calcular_sigma(unidades, oportunidades, defeitos)
+                return f"O nível sigma do processo é aproximadamente **{sigma}**."
+            else:
+                return "Para calcular o nível sigma, preciso de três informações: número de unidades, oportunidades por unidade e defeitos."
+        except Exception as e:
+            return f"Não consegui calcular o sigma: {e}"
+    
+    # Se não for cálculo, cai no fluxo normal
+    return agente.invoke({"input": pergunta})["answer"]
+
+def calcular_sigma(unidades: int, oportunidades_por_unidade: int, defeitos: int) -> float:
+    """
+    Calcula o nível sigma de um processo com base em unidades, oportunidades e defeitos.
+    Fórmula padrão: DPMO -> conversão Sigma (com shift de 1,5).
+    """
+    oportunidades_totais = unidades * oportunidades_por_unidade
+    dpmo = (defeitos / oportunidades_totais) * 1_000_000
+    
+    yield_rate = 1 - (dpmo / 1_000_000)
+    z = norm.ppf(yield_rate)  # valor z da normal
+    sigma = z + 1.5           # ajuste Six Sigma tradicional
+    
+    return round(sigma, 2)
