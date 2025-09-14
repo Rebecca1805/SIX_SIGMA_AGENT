@@ -62,7 +62,7 @@ def carregar_agente(folder_path: str = "DADOS"):
     vectorstore = FAISS.from_documents(splits, embeddings)
     retriever = vectorstore.as_retriever()
 
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.0)
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.5)
 
     # Prompt padronizado: usa 'context' para docs e 'input' para a pergunta
     prompt = ChatPromptTemplate.from_messages([
