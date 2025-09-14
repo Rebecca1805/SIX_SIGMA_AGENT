@@ -1,3 +1,5 @@
+from scipy.stats import norm
+
 def calcular_sigma(unidades: int, oportunidades_por_unidade: int, defeitos: int) -> float:
     """
     Calcula o nível sigma de um processo com base em unidades, oportunidades e defeitos.
@@ -10,4 +12,5 @@ def calcular_sigma(unidades: int, oportunidades_por_unidade: int, defeitos: int)
     z = norm.ppf(yield_rate)  # valor z da normal
     sigma = z + 1.5           # ajuste Six Sigma tradicional
     
+
     return round(sigma, 2)
