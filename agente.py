@@ -17,6 +17,8 @@ from langchain.chains import create_retrieval_chain
 from scipy.stats import norm
 import re
 from utils import calcular_sigma
+from langchain_openai import ChatOpenAI
+import streamlit as st
 
 # Garante que o event loop exista no Streamlit
 try:
@@ -95,7 +97,6 @@ def carregar_agente(folder_path: str = "DADOS"):
 
     return chain
 
-import streamlit as st
 def responder_agente(agente, pergunta: str) -> str:
     """
     Roteia perguntas:
@@ -146,10 +147,11 @@ def responder_agente(agente, pergunta: str) -> str:
 
     # 3. Se não houver resposta da apostila, usa fallback no modelo
     if "não encontrei" in resposta.lower() or resposta.strip() == "":
+        llm_fallback = ChatOpenAI(model="gpt-4o-mini", temperature=0.0)
         return (
             "⚠️ Não encontrei essa resposta na apostila. "
             "Aqui vai uma explicação com base em conhecimento geral de Six Sigma:\n\n"
-            f"{agente.llm.invoke(pergunta).content}"
+            f"{llm_fallback.invoke(pergunta).content}"
         )
 
     return resposta
